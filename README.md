@@ -1,5 +1,5 @@
 ﻿# Prince of Persia: The Lost Crown Fix
-(https://www.patreon.com/Wintermance) 
+[![Patreon-Button](https://github.com/user-attachments/assets/629633d4-b8de-46bf-9251-26c9d7b7b573)](https://www.patreon.com/Wintermance) 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/W7W01UAI9)<br />
 [![Github All Releases](https://img.shields.io/github/downloads/Lyall/PoPTLCFix/total.svg)](https://github.com/Lyall/PoPTLCFix/releases)
 
@@ -31,7 +31,7 @@ This list will contain bugs which may or may not be fixed.
 
 ## Screenshots
 
-|  |
+| ![ezgif-2-b3ef5a727d](https://github.com/user-attachments/assets/9a0e658d-0a7c-46df-8666-96e04f87c591) |
 |:--:|
 | Gameplay |
 
