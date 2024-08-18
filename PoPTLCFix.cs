@@ -328,6 +328,7 @@ namespace PoPTLCFix
             [HarmonyPostfix]
             public static void DisablePillarboxing()
             {
+                // Disable pillarboxing
                 if (pillarboxLayout && pillarboxFitter && bSpanHUD.Value)
                 {
                     pillarboxLayout.enabled = false;
@@ -335,6 +336,7 @@ namespace PoPTLCFix
                     Log.LogInfo($"UIManager: Disabled pillarboxing.");
                 }
 
+                // Disable background
                 if (background)
                 {
                     background.active = false;
