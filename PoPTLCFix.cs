@@ -92,16 +92,11 @@ namespace PoPTLCFix
                     _ => FullScreenMode.FullScreenWindow,
                 };
 
-                // Set resolution
-                UnityEngine.Screen.SetResolution(iCustomResX.Value, iCustomResY.Value, windowMode, 0);
-                Log.LogInfo($"Custom Resolution: Setting resolution {iCustomResX.Value}x{iCustomResY.Value}, window mode - {windowMode}.");
-
-                // Calculate aspect ratio
-                fAspectRatio = (float)iCustomResX.Value / iCustomResY.Value;
-                fAspectMultiplier = fAspectRatio / fNativeAspect;
-
                 Log.LogInfo($"Patches: Applying resolution patch.");
                 Harmony.CreateAndPatchAll(typeof(ResolutionPatch));
+
+                // Set resolution
+                UnityEngine.Screen.SetResolution(iCustomResX.Value, iCustomResY.Value, windowMode, 0);
             }                  
         }
 
@@ -147,6 +142,28 @@ namespace PoPTLCFix
         [HarmonyPatch]
         public class ResolutionPatch
         {
+            // Get aspect ratio after res change
+            [HarmonyPatch(typeof(Screen), nameof(Screen.SetResolution), new System.Type[] { typeof(int), typeof(int), typeof(FullScreenMode), typeof(int)})]
+            [HarmonyPostfix]
+            public static void GetAspectRatio(Screen __instance, ref int __0, ref int __1, ref FullScreenMode __2)
+            {
+                // Calculate aspect ratio
+                fAspectRatio = (float)__0 / __1;
+                fAspectMultiplier = (float)fAspectRatio / fNativeAspect;
+
+                Log.LogInfo($"Resolution: Setting resolution {__0}x{__1}, window mode - {__2}.");
+                Log.LogInfo($"Resolution: AspectRatio: {fAspectRatio}, AspectMultiplier: {fAspectMultiplier}");
+
+                // Set UI scale
+                if (Alkawa.Gameplay.UIManager.Instance)
+                {
+                    if (fAspectRatio > fNativeAspect)
+                    {
+                        Alkawa.Gameplay.UIManager.Instance.m_canvasScaler.referenceResolution = new Vector2((float)System.Math.Round(1080 * fAspectRatio, 0), 1080f);
+                    }
+                }    
+            }
+
             // Stop resolution changes
             [HarmonyPatch(typeof(Alkawa.Engine.ScreenResolutionHandler), nameof(Alkawa.Engine.ScreenResolutionHandler.SetResolution))]
             [HarmonyPatch(typeof(Alkawa.Gameplay.BaseGameOptionsMenu), nameof(Alkawa.Gameplay.BaseGameOptionsMenu.OnResolutionChange))]
@@ -187,17 +204,6 @@ namespace PoPTLCFix
                 {
                     // Fix scaling
                     __instance.m_ScreenMatchMode = CanvasScaler.ScreenMatchMode.Expand;
-                }
-            }
-
-            // Fix UI scale
-            [HarmonyPatch(typeof(Alkawa.Gameplay.PlayerMapSubComponent), nameof(Alkawa.Gameplay.PlayerMapSubComponent.InitAfterUIManager))]
-            [HarmonyPostfix]
-            public static void ScaleFix(Alkawa.Gameplay.PlayerMapSubComponent __instance)
-            {
-                if (fAspectRatio > fNativeAspect)
-                {
-                    __instance.m_UIManager.m_canvasScaler.referenceResolution = new Vector2((float)System.Math.Round(1080 * fAspectRatio, 0), 1080f);
                 }
             }
 
@@ -323,6 +329,7 @@ namespace PoPTLCFix
             }
 
             // Disable pillarboxing
+            [HarmonyPatch(typeof(Alkawa.Gameplay.PauseChoiceController), nameof(Alkawa.Gameplay.PauseChoiceController.Close))] // Pause canvas
             [HarmonyPatch(typeof(Alkawa.Gameplay.UIManager), nameof(Alkawa.Gameplay.UIManager.RestoreActiveCanvas))]
             [HarmonyPatch(typeof(Alkawa.Gameplay.UIManager), nameof(Alkawa.Gameplay.UIManager.OnExitCutsceneStateComplete))]
             [HarmonyPatch(typeof(Alkawa.Gameplay.UIManager), nameof(Alkawa.Gameplay.UIManager.OnPlayerEnterLevel))]
@@ -391,31 +398,35 @@ namespace PoPTLCFix
             }
 
             // Change resolution for cinematic videos
-            [HarmonyPatch(typeof(Alkawa.Gameplay.VideoController), nameof(Alkawa.Gameplay.VideoController.PrepareVideo))]
+            [HarmonyPatch(typeof(Alkawa.Gameplay.VideoController), nameof(Alkawa.Gameplay.VideoController.SetUIManagerTexture))]
             [HarmonyPostfix]
             public static void PreVideoFix(Alkawa.Gameplay.VideoController __instance)
             {
-                if (fAspectRatio > fNativeAspect)
+                if (__instance.m_videoPlayer.url != null)
                 {
-                    Screen.SetResolution((int)System.Math.Round(iCustomResY.Value * fNativeAspect, 0), iCustomResY.Value, windowMode, 0);
-                }
-                else if (fAspectRatio < fNativeAspect)
-                {
-                    Screen.SetResolution(iCustomResX.Value, (int)System.Math.Round(iCustomResX.Value / fNativeAspect, 0), windowMode, 0);
-                }
-                Log.LogInfo($"VideoController: Video prepared.");
+                    if (fAspectRatio > fNativeAspect)
+                    {
+                        Screen.SetResolution((int)System.Math.Round(iCustomResY.Value * fNativeAspect, 0), iCustomResY.Value, windowMode, 0);
+                    }
+                    else if (fAspectRatio < fNativeAspect)
+                    {
+                        Screen.SetResolution(iCustomResX.Value, (int)System.Math.Round(iCustomResX.Value / fNativeAspect, 0), windowMode, 0);
+                    }
+                    Log.LogInfo($"VideoController: Video prepared.");
+                }            
             }
 
             // Change resolution back after cinematic videos
             [HarmonyPatch(typeof(Alkawa.Gameplay.VideoController), nameof(Alkawa.Gameplay.VideoController.StopVideo))]
+            [HarmonyPatch(typeof(Alkawa.Gameplay.InteractiveElementLogic_CutsceneSequence), nameof(Alkawa.Gameplay.InteractiveElementLogic_CutsceneSequence.Skip))]
             [HarmonyPostfix]
-            public static void PostVideoFix(Alkawa.Gameplay.VideoController __instance)
+            public static void PostVideoFix()
             {
-                if (fAspectRatio != fNativeAspect)
+                if (Screen.currentResolution.width != iCustomResX.Value || Screen.currentResolution.width != iCustomResY.Value)
                 {
                     Screen.SetResolution(iCustomResX.Value, iCustomResY.Value, windowMode, 0);
-                }
-                Log.LogInfo($"VideoController: Video ended.");
+                    Log.LogInfo($"VideoController: Video ended.");
+                }    
             }
         }
     }
