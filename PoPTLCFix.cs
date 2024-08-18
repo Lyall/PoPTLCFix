@@ -213,7 +213,7 @@ namespace PoPTLCFix
             public static void ScreenAddPillarboxing(Alkawa.Gameplay.UIScreen __instance)
             {
                 // Add pillarboxing
-                if (!__instance.m_Canvas.gameObject.GetComponent<UnityEngine.UI.LayoutElement>() && !__instance.m_Canvas.gameObject.GetComponent<UnityEngine.UI.ContentSizeFitter>())
+                if (__instance.m_Canvas.gameObject.GetComponent<UnityEngine.UI.LayoutElement>() == null && __instance.m_Canvas.gameObject.GetComponent<UnityEngine.UI.ContentSizeFitter>() == null)
                 {
                     __instance.m_Canvas.gameObject.AddComponent<UnityEngine.UI.LayoutElement>();
                     __instance.m_Canvas.gameObject.AddComponent<UnityEngine.UI.ContentSizeFitter>();
@@ -241,7 +241,7 @@ namespace PoPTLCFix
                 Log.LogInfo($"UIScreen: Enabled pillarboxing for {__instance.m_Canvas.name}.");
                 
                 // Add mask
-                if (!__instance.m_Canvas.gameObject.GetComponent<RectMask2D>())
+                if (__instance.m_Canvas.gameObject.GetComponent<RectMask2D>() == null)
                 {
                     RectMask2D mask = __instance.m_Canvas.gameObject.AddComponent<RectMask2D>();
                     mask.enabled = true;
@@ -254,10 +254,10 @@ namespace PoPTLCFix
             [HarmonyPostfix]
             public static void ManagerAddPillarboxing(Alkawa.Gameplay.UIManager __instance)
             {
-                if (__instance)
+                if (__instance != null)
                 {
                     // Add pillarboxing
-                    if (!__instance.gameObject.GetComponent<UnityEngine.UI.LayoutElement>() && !__instance.gameObject.GetComponent<UnityEngine.UI.ContentSizeFitter>())
+                    if (__instance.gameObject.GetComponent<UnityEngine.UI.LayoutElement>() == null && __instance.gameObject.GetComponent<UnityEngine.UI.ContentSizeFitter>() == null)
                     {
                         __instance.gameObject.AddComponent<UnityEngine.UI.LayoutElement>();
                         __instance.gameObject.AddComponent<UnityEngine.UI.ContentSizeFitter>();
@@ -280,7 +280,7 @@ namespace PoPTLCFix
                     }
 
                     // Enable UIManager pillarboxing
-                    if (pillarboxLayout && pillarboxLayout)
+                    if (pillarboxLayout != null && pillarboxLayout != null)
                     {
                         pillarboxLayout.enabled = true;
                         pillarboxFitter.enabled = true;
@@ -288,7 +288,7 @@ namespace PoPTLCFix
                     }
 
                     // Add mask
-                    if (!__instance.GetComponent<RectMask2D>())
+                    if (__instance.GetComponent<RectMask2D>() == null)
                     {
                         RectMask2D mask = __instance.gameObject.AddComponent<RectMask2D>();
                         mask.enabled = true;
@@ -319,7 +319,7 @@ namespace PoPTLCFix
             [HarmonyPostfix]
             public static void EnablePillarboxing(Alkawa.Gameplay.UIManager __instance)
             {
-                if (pillarboxLayout && pillarboxFitter && background)
+                if (pillarboxLayout != null && pillarboxFitter != null && background != null)
                 {
                     pillarboxLayout.enabled = true;
                     pillarboxFitter.enabled = true;
@@ -345,7 +345,7 @@ namespace PoPTLCFix
                 }
 
                 // Disable background
-                if (background)
+                if (background != null)
                 {
                     background.active = false;
                 }
@@ -373,7 +373,7 @@ namespace PoPTLCFix
                 var minimapCams = __instance.GetMenu<Alkawa.Gameplay.WorldMapMenu>().Data.m_minimapCameras;
                 foreach (var cam in minimapCams)
                 {
-                    if (cam)
+                    if (cam != null)
                     {
                         if (cam.name == "MiniMapCanvasBackgroundCamera" || cam.name == "MiniMapCanvasCamera")
                         {
