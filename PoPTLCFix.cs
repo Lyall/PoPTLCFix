@@ -34,6 +34,7 @@ namespace PoPTLCFix
         // Variables
         public static LayoutElement pillarboxLayout;
         public static ContentSizeFitter pillarboxFitter;
+        public static GameObject background;
 
         public override void Load()
         {
@@ -209,34 +210,29 @@ namespace PoPTLCFix
                 {
                     __instance.m_Canvas.gameObject.AddComponent<UnityEngine.UI.LayoutElement>();
                     __instance.m_Canvas.gameObject.AddComponent<UnityEngine.UI.ContentSizeFitter>();
-
-                    var menuPillarboxLayout = __instance.m_Canvas.gameObject.GetComponent<UnityEngine.UI.LayoutElement>();
-                    var menuPillarboxFitter = __instance.m_Canvas.gameObject.GetComponent<UnityEngine.UI.ContentSizeFitter>();
-
-                    menuPillarboxLayout.preferredWidth = 1920;
-                    menuPillarboxLayout.preferredHeight = 1080;
-
-                    if (fAspectRatio > fNativeAspect)
-                    {
-                        menuPillarboxFitter.horizontalFit = UnityEngine.UI.ContentSizeFitter.FitMode.PreferredSize;
-                    }
-                    else if (fAspectRatio < fNativeAspect)
-                    {             
-                        menuPillarboxFitter.verticalFit = UnityEngine.UI.ContentSizeFitter.FitMode.PreferredSize;
-                    }
-
-                    menuPillarboxLayout.enabled = true;
-                    menuPillarboxFitter.enabled = true;
-
                     Log.LogInfo($"UIScreen: Added pillarboxing components for {__instance.m_Canvas.name}.");
                 }
-                else
+
+                var menuPillarboxLayout = __instance.m_Canvas.gameObject.GetComponent<UnityEngine.UI.LayoutElement>();
+                var menuPillarboxFitter = __instance.m_Canvas.gameObject.GetComponent<UnityEngine.UI.ContentSizeFitter>();
+
+                menuPillarboxLayout.preferredWidth = 1920;
+                menuPillarboxLayout.preferredHeight = 1080;
+
+                if (fAspectRatio > fNativeAspect)
                 {
-                    __instance.m_Canvas.gameObject.GetComponent<UnityEngine.UI.LayoutElement>().enabled = true;
-                    __instance.m_Canvas.gameObject.GetComponent<UnityEngine.UI.ContentSizeFitter>().enabled = true;
-                    Log.LogInfo($"UIScreen: Enabled pillarboxing for {__instance.m_Canvas.name}.");
+                    menuPillarboxFitter.horizontalFit = UnityEngine.UI.ContentSizeFitter.FitMode.PreferredSize;
+                }
+                else if (fAspectRatio < fNativeAspect)
+                {
+                    menuPillarboxFitter.verticalFit = UnityEngine.UI.ContentSizeFitter.FitMode.PreferredSize;
                 }
 
+                menuPillarboxLayout.enabled = true;
+                menuPillarboxFitter.enabled = true;
+
+                Log.LogInfo($"UIScreen: Enabled pillarboxing for {__instance.m_Canvas.name}.");
+                
                 // Add mask
                 if (!__instance.m_Canvas.gameObject.GetComponent<RectMask2D>())
                 {
@@ -258,7 +254,7 @@ namespace PoPTLCFix
                     {
                         __instance.gameObject.AddComponent<UnityEngine.UI.LayoutElement>();
                         __instance.gameObject.AddComponent<UnityEngine.UI.ContentSizeFitter>();
-                        Log.LogInfo("UIManager: Added pillarboxing components.");
+                        Log.LogInfo($"UIManager: Added pillarboxing components for {__instance.name}.");
                     }
 
                     pillarboxLayout = __instance.gameObject.GetComponent<UnityEngine.UI.LayoutElement>();
@@ -281,7 +277,7 @@ namespace PoPTLCFix
                     {
                         pillarboxLayout.enabled = true;
                         pillarboxFitter.enabled = true;
-                        Log.LogInfo("UIManager: Enabled pillarboxing.");
+                        Log.LogInfo($"UIManager: Enabled pillarboxing.");
                     }
 
                     // Add mask
@@ -291,6 +287,23 @@ namespace PoPTLCFix
                         mask.enabled = true;
                         Log.LogInfo($"UIManager: Added RectMask2D for {__instance.name}.");
                     }
+
+                    // Add black background object
+                    background = new GameObject("background");
+                    background.transform.SetParent(__instance.gameObject.transform);
+
+                    // Create image and set it to black
+                    Image img = background.AddComponent<Image>();
+                    img.color = Color.black;
+
+                    // Set rect size to fill screen
+                    RectTransform rt = background.GetComponent<RectTransform>();
+                    rt.sizeDelta = new Vector2(99999, 99999);
+
+                    // Make sure it renders behind everything else
+                    Canvas canvas = background.AddComponent<Canvas>();
+                    canvas.overrideSorting = true;
+                    canvas.sortingOrder = -1;
                 }
             }
 
@@ -299,10 +312,11 @@ namespace PoPTLCFix
             [HarmonyPostfix]
             public static void EnablePillarboxing(Alkawa.Gameplay.UIManager __instance)
             {
-                if (pillarboxLayout && pillarboxFitter)
+                if (pillarboxLayout && pillarboxFitter && background)
                 {
                     pillarboxLayout.enabled = true;
                     pillarboxFitter.enabled = true;
+                    background.active = true;
                     Log.LogInfo("UIManager: Enabled pillarboxing.");                
                 }     
             }
@@ -317,15 +331,20 @@ namespace PoPTLCFix
                 if (pillarboxLayout && pillarboxFitter && bSpanHUD.Value)
                 {
                     pillarboxLayout.enabled = false;
-                    pillarboxFitter.enabled = false;
+                    pillarboxFitter.enabled = false;  
                     Log.LogInfo($"UIManager: Disabled pillarboxing.");
+                }
+
+                if (background)
+                {
+                    background.active = false;
                 }
             }
 
             // Fix character in main menu
             [HarmonyPatch(typeof(Alkawa.Gameplay.CharacterMenu), nameof(Alkawa.Gameplay.CharacterMenu.SpawnCharacterInstance))]
             [HarmonyPostfix]
-            public static void CharacterCamera(Alkawa.Gameplay.CharacterMenu __instance)
+            public static void CharacterMenuCamera(Alkawa.Gameplay.CharacterMenu __instance)
             {
                 // "SargonCamera"
                 if (__instance.m_characterCamera != null)
