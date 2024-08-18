@@ -27,7 +27,7 @@ Please report any issues you see.
 This list will contain bugs which may or may not be fixed.
 
 - Video cinematics are stretched.
-- Visual errors may appear outside the 16:9 boundary for menus.
+- Map markers appear outside the 16:9 boundary.
 
 ## Screenshots
 
