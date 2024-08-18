@@ -195,6 +195,17 @@ namespace PoPTLCFix
                 }
             }
 
+            // Increase AI culling distance
+            [HarmonyPatch(typeof(Alkawa.ObjectRegister.AlkawaCullingHelper), nameof(Alkawa.ObjectRegister.AlkawaCullingHelper.ToMultiplier))]
+            [HarmonyPostfix]
+            public static void DisableCulling(ref float __result)
+            {
+                if (fAspectRatio > fNativeAspect)
+                {
+                    __result *= fAspectMultiplier;
+                }
+            }
+
             // Fix UI
             [HarmonyPatch(typeof(CanvasScaler), nameof(CanvasScaler.OnEnable))]
             [HarmonyPostfix]
@@ -335,10 +346,13 @@ namespace PoPTLCFix
             {
                 if (pillarboxLayout != null && pillarboxFitter != null && background != null)
                 {
-                    pillarboxLayout.enabled = true;
-                    pillarboxFitter.enabled = true;
-                    background.active = true;
-                    Log.LogInfo("UIManager: Enabled pillarboxing.");                
+                    if (Alkawa.Gameplay.UIManager.Instance && !Alkawa.Gameplay.UIManager.Instance.IsActiveCanvas(Alkawa.Gameplay.EUICanvasID.HUD))
+                    {
+                        pillarboxLayout.enabled = true;
+                        pillarboxFitter.enabled = true;
+                        background.active = true;
+                        Log.LogInfo("UIManager: Enabled pillarboxing.");
+                    }              
                 }     
             }
 
