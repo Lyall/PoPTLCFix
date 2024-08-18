@@ -26,7 +26,7 @@ This is a BepInEx plugin for Prince of Persia: The Lost Crown that adds custom r
 Please report any issues you see.
 This list will contain bugs which may or may not be fixed.
 
-- Video cinematics are stretched.
+- Video cinematics cause the game to change resolution.
 - Map markers appear outside the 16:9 boundary.
 
 ## Screenshots
