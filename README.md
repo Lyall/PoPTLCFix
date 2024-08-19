@@ -11,7 +11,7 @@ This is a BepInEx plugin for Prince of Persia: The Lost Crown that adds custom r
 - Intro skip.
 
 ## Installation
-- Grab the latest release of HundredHeroesFix from [here.](https://github.com/Lyall/PoPTLCFix/releases)
+- Grab the latest release of PoPTLCFix from [here.](https://github.com/Lyall/PoPTLCFix/releases)
 - Extract the contents of the release zip in to the the game folder. (e.g. "**steamapps\common\Prince of Persia The Lost Crown**" for Steam).
 - 🚩First boot of the game may take a few minutes as BepInEx generates an assembly cache!
 
