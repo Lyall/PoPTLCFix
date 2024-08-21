@@ -160,6 +160,7 @@ namespace PoPTLCFix
                     if (fAspectRatio > fNativeAspect)
                     {
                         Alkawa.Gameplay.UIManager.Instance.m_canvasScaler.referenceResolution = new Vector2((float)System.Math.Round(1080 * fAspectRatio, 0), 1080f);
+                        Log.LogInfo($"Resolution: Set UIManager canvasScaler refRes to {Alkawa.Gameplay.UIManager.Instance.m_canvasScaler.referenceResolution}");
                     }
                 }    
             }
@@ -267,6 +268,10 @@ namespace PoPTLCFix
             {
                 if (__instance != null)
                 {
+                    // Fix UI scaling
+                    __instance.m_canvasScaler.referenceResolution = new Vector2((float)System.Math.Round(1080 * fAspectRatio, 0), 1080f);
+                    Log.LogInfo($"UIManager: Set UIManager canvasScaler refRes to {__instance.m_canvasScaler.referenceResolution}");
+
                     // Add pillarboxing
                     if (__instance.gameObject.GetComponent<UnityEngine.UI.LayoutElement>() == null && __instance.gameObject.GetComponent<UnityEngine.UI.ContentSizeFitter>() == null)
                     {
@@ -396,7 +401,7 @@ namespace PoPTLCFix
             // Fix map camera aspect 
             [HarmonyPatch(typeof(Alkawa.Gameplay.UIManager), nameof(Alkawa.Gameplay.UIManager.OpenWorldMap))]
             [HarmonyPostfix]
-            public static void EnableMapPillarboxing(Alkawa.Gameplay.UIManager __instance)
+            public static void FixMapAspect(Alkawa.Gameplay.UIManager __instance)
             {
                 // Fix aspect ratio of map camera
                 var minimapCams = __instance.GetMenu<Alkawa.Gameplay.WorldMapMenu>().Data.m_minimapCameras;
@@ -408,6 +413,7 @@ namespace PoPTLCFix
                         {
                             cam.GetComponent<Camera>().aspect = fNativeAspect;
                             cam.GetComponent<Camera>().backgroundColor = Color.black;
+                            Log.LogInfo($"WorldMap: Set {cam.GetComponent<Camera>().name} aspect ratio to {cam.GetComponent<Camera>().aspect}.");
                         }
                     }
                 }
