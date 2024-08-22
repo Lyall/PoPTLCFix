@@ -25,7 +25,12 @@ namespace PoPTLCFix
 
         // HUD
         public static ConfigEntry<bool> bSpanHUD;
-        
+
+        // Graphics Tweaks
+        public static ConfigEntry<bool> bChromaticAberration;
+        public static ConfigEntry<bool> bMotionBlur;
+        public static ConfigEntry<bool> bVignette;
+
         // Aspect Ratio
         private const float fNativeAspect = (float)16 / 9;
         public static float fAspectRatio;
@@ -42,7 +47,7 @@ namespace PoPTLCFix
             // Plugin startup logic
             Log = base.Log;
             Log.LogInfo($"Plugin {MyPluginInfo.PLUGIN_GUID} is loaded!");
-            
+
             // Skip Intro
             bSkipIntro = Config.Bind("Intro Skip",
                                 "Enabled",
@@ -77,6 +82,21 @@ namespace PoPTLCFix
                                 true,
                                 "Spans gameplay HUD to the edges of the screen.");
 
+            // Graphics tweaks
+            bChromaticAberration = Config.Bind("Graphical Tweaks",
+                                "DisableChromaticAberration",
+                                 false,
+                                "Set to true to disable chromatic aberration (color fringing).");
+
+            bMotionBlur = Config.Bind("Graphical Tweaks",
+                                "DisableMotionBlur",
+                                 true,
+                                "Set to true to disable motion blur.");
+
+            bVignette = Config.Bind("Graphical Tweaks",
+                                "DisableVignette",
+                                 true,
+                                "Set to true to disable vignetting (darkening at the edges of the screen).");
             // Apply patches
             if (bSkipIntro.Value)
             {
@@ -97,7 +117,12 @@ namespace PoPTLCFix
 
                 // Set resolution
                 UnityEngine.Screen.SetResolution(iCustomResX.Value, iCustomResY.Value, windowMode, 0);
-            }                  
+            }
+            if (bChromaticAberration.Value || bMotionBlur.Value || bVignette.Value)
+            {
+                Harmony.CreateAndPatchAll(typeof(GraphicsPatch));
+                Log.LogInfo($"Patches: Applying graphics patch.");
+            }
         }
 
         [HarmonyPatch]
@@ -135,6 +160,37 @@ namespace PoPTLCFix
                         __0 = Alkawa.Engine.EGameFlowStateType.TitleScreen;
                         Log.LogInfo($"Skipping mandatory screens (FTUE).");
                     }
+                }
+            }
+        }
+
+        [HarmonyPatch]
+        public class GraphicsPatch
+        {
+            // Adjust vignette
+            [HarmonyPatch(typeof(UnityEngine.Rendering.Volume), nameof(UnityEngine.Rendering.Volume.OnEnable))]
+            [HarmonyPostfix]
+            public static void PostProcessTweaks(UnityEngine.Rendering.Volume __instance)
+            {
+                __instance.profile.TryGet(out UnityEngine.Rendering.Universal.AlkawaChromaticAberration ca);
+                if (ca && bChromaticAberration.Value)
+                {
+                    Log.LogInfo($"Graphics Tweaks: Changed {__instance.gameObject.name}: Chromatic aberration from {ca.active} to False.");
+                    ca.active = false;
+                }
+
+                __instance.profile.TryGet(out UnityEngine.Rendering.Universal.MotionBlur motionBlur);
+                if (motionBlur && bMotionBlur.Value)
+                {
+                    Log.LogInfo($"Graphics Tweaks: Changed {__instance.gameObject.name}: Motion blur from {motionBlur.active} to False.");
+                    motionBlur.active = false;
+                }
+
+                __instance.profile.TryGet(out UnityEngine.Rendering.Universal.AlkawaVignette vignette);
+                if (vignette && bVignette.Value)
+                {
+                    Log.LogInfo($"Graphics Tweaks: Changed {__instance.gameObject.name}: Vignette from {vignette.active} to False.");
+                    vignette.active = false;
                 }
             }
         }
