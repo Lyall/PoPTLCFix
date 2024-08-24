@@ -403,34 +403,45 @@ namespace PoPTLCFix
             // Enable pillarboxing
             [HarmonyPatch(typeof(Alkawa.Gameplay.UIManager), nameof(Alkawa.Gameplay.UIManager.TryDisableHighContrastOnMenuOpen))]
             [HarmonyPostfix]
-            public static void EnablePillarboxing()
+            public static void EnablePillarboxing(Alkawa.Gameplay.UIManager __instance, ref Alkawa.Gameplay.EUICanvasID __0)
             {
                 if (pillarboxLayout != null && pillarboxFitter != null && background != null)
                 {
-                    if (Alkawa.Gameplay.UIManager.Instance && !Alkawa.Gameplay.UIManager.Instance.IsActiveCanvas(Alkawa.Gameplay.EUICanvasID.HUD))
+                    if (__instance)
                     {
                         pillarboxLayout.enabled = true;
                         pillarboxFitter.enabled = true;
                         background.active = true;
                         Log.LogInfo("UIManager: Enabled pillarboxing.");
-                    }              
+                    }
+
+                    if (__instance.IsActiveCanvas(Alkawa.Gameplay.EUICanvasID.HUD))
+                    {
+                        background.active = false;
+                    }
                 }     
             }
 
             // Disable pillarboxing
             [HarmonyPatch(typeof(Alkawa.Gameplay.PauseChoiceController), nameof(Alkawa.Gameplay.PauseChoiceController.Close))] // Pause canvas
-            [HarmonyPatch(typeof(Alkawa.Gameplay.UIManager), nameof(Alkawa.Gameplay.UIManager.RestoreActiveCanvas))]
-            [HarmonyPatch(typeof(Alkawa.Gameplay.UIManager), nameof(Alkawa.Gameplay.UIManager.OnExitCutsceneStateComplete))]
-            [HarmonyPatch(typeof(Alkawa.Gameplay.UIManager), nameof(Alkawa.Gameplay.UIManager.OnPlayerEnterLevel))]
-            [HarmonyPatch(typeof(Alkawa.Gameplay.ConversationUIManager), nameof(Alkawa.Gameplay.ConversationUIManager.EndConversation))]
+            [HarmonyPatch(typeof(Alkawa.Gameplay.UIManager), nameof(Alkawa.Gameplay.UIManager.OnExitCutsceneStateComplete))] // On after cutscenes
+            [HarmonyPatch(typeof(Alkawa.Gameplay.UIManager), nameof(Alkawa.Gameplay.UIManager.OnPlayerEnterLevel))] // On load
+            [HarmonyPatch(typeof(Alkawa.Gameplay.UIManager), nameof(Alkawa.Gameplay.UIManager.RestoreActiveCanvas))] // On restore canvas
+            [HarmonyPatch(typeof(Alkawa.Gameplay.UIManager), nameof(Alkawa.Gameplay.UIManager.TryCloseCurrentMenuAndBackToGameplay))] // Close menu back to game
+            [HarmonyPatch(typeof(Alkawa.Gameplay.ConversationUIManager), nameof(Alkawa.Gameplay.ConversationUIManager.EndConversation))] // On conversation end
             [HarmonyPostfix]
             public static void DisablePillarboxing()
             {
+                if (!Alkawa.Gameplay.UIManager.Instance.IsActiveCanvas(Alkawa.Gameplay.EUICanvasID.HUD, true))
+                {
+                    return;
+                }
+
                 // Disable pillarboxing
                 if (pillarboxLayout && pillarboxFitter && bSpanHUD.Value)
                 {
                     pillarboxLayout.enabled = false;
-                    pillarboxFitter.enabled = false;  
+                    pillarboxFitter.enabled = false;
                     Log.LogInfo($"UIManager: Disabled pillarboxing.");
                 }
 
