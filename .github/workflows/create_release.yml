@@ -33,7 +33,7 @@ jobs:
     - run: cp .github/workflows/BepInEx.cfg ${{ github.event.repository.name }}/reg/BepInEx/config
     - run: cp .github/workflows/doorstop_config.ini ${{ github.event.repository.name }}/reg/
     - run: touch ${{ github.event.repository.name }}/reg/EXTRACT_TO_GAME_DIRECTORY
-    - run: cd ${{ github.event.repository.name }}/reg; zip -r ../${{ github.event.repository.name }}_${{ github.event.inputs.version }}.zip ./*
+    - run: cd ${{ github.event.repository.name }}/reg; zip -r ../../${{ github.event.repository.name }}_${{ github.event.inputs.version }}.zip ./*
 
     # Ubi+ artifact
     - run: mkdir -p ${{ github.event.repository.name }}/ubi/BepInEx/plugins; mkdir -p ${{ github.event.repository.name }}/ubi/BepInEx/config
@@ -43,7 +43,7 @@ jobs:
     - run: cp .github/workflows/BepInEx.cfg ${{ github.event.repository.name }}/ubi/BepInEx/config
     - run: cp .github/workflows/doorstop_config.ini ${{ github.event.repository.name }}/ubi/
     - run: touch ${{ github.event.repository.name }}/ubi/EXTRACT_TO_GAME_DIRECTORY
-    - run: cd ${{ github.event.repository.name }}/ubi; zip -r ../${{ github.event.repository.name }}_${{ github.event.inputs.version }}_UbisoftPlus.zip ./*
+    - run: cd ${{ github.event.repository.name }}/ubi; zip -r ../../${{ github.event.repository.name }}_${{ github.event.inputs.version }}_UbisoftPlus.zip ./*
 
     # Create release
     - uses: ncipollo/release-action@v1
