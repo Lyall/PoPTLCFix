@@ -36,4 +36,5 @@ This list will contain bugs which may or may not be fixed.
 | Gameplay |
 
 ## Credits
+[p1xel8ted](https://github.com/p1xel8ted) for previous work on an ultrawide solution for this game. <br />
 [BepinEx](https://github.com/BepInEx/BepInEx) for plugin loading.
