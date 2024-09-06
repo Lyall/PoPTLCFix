@@ -38,7 +38,7 @@ jobs:
     # Ubi+ artifact
     - run: mkdir -p ${{ github.event.repository.name }}/ubi/BepInEx/plugins; mkdir -p ${{ github.event.repository.name }}/ubi/BepInEx/config
     - run: cp build/${{ github.event.repository.name }}.dll ${{ github.event.repository.name }}/ubi/BepInEx/plugins/${{ github.event.repository.name }}.dll
-    - run: unzip BepInEx-Unity.IL2CPP-win-x64* -d ${{ github.event.repository.name }}/ubi
+    - run: unzip .github/workflows/ubiplus_BepInEx-Unity.IL2CPP-win-x64* -d ${{ github.event.repository.name }}/ubi
     - run: chmod -R 775 ${{ github.event.repository.name }}/ubi
     - run: cp .github/workflows/BepInEx.cfg ${{ github.event.repository.name }}/ubi/BepInEx/config
     - run: cp .github/workflows/doorstop_config.ini ${{ github.event.repository.name }}/ubi/
