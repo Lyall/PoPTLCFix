@@ -17,21 +17,38 @@ jobs:
     - uses: actions/setup-dotnet@v1
       with: 
         dotnet-version: '6.0.x'
+
+    # Download BepInEx
     - run: echo "::set-output name=URL::$(curl -vs https://builds.bepinex.dev/projects/bepinex_be 2>&1 | grep -Po '(?<=href=")(\/projects\/bepinex_be\/(.*)\/BepInEx-Unity.IL2CPP-win-x64(.*))(?=")' | head -1)"
       id: bepinexurl
     - run: wget https://builds.bepinex.dev${{ steps.bepinexurl.outputs.URL}}
-    - run: mkdir -p ${{ github.event.repository.name }}/BepInEx/plugins; mkdir -p ${{ github.event.repository.name }}/BepInEx/config
+
     - run: dotnet build -c Release -o build
-    - run: cp build/${{ github.event.repository.name }}.dll ${{ github.event.repository.name }}/BepInEx/plugins/${{ github.event.repository.name }}.dll
-    - run: unzip BepInEx-Unity.IL2CPP-win-x64* -d ${{ github.event.repository.name }}
-    - run: chmod -R 775 ${{ github.event.repository.name }}
-    - run: cp .github/workflows/BepInEx.cfg ${{ github.event.repository.name }}/BepInEx/config/
-    - run: cp .github/workflows/doorstop_config.ini ${{ github.event.repository.name }}/
-    - run: touch ${{ github.event.repository.name }}/EXTRACT_TO_GAME_DIRECTORY
-    - run: cd ${{ github.event.repository.name }}; zip -r ../${{ github.event.repository.name }}_${{ github.event.inputs.version }}.zip ./*
+
+    # Normal artifact
+    - run: mkdir -p ${{ github.event.repository.name }}/reg/BepInEx/plugins; mkdir -p ${{ github.event.repository.name }}/reg/BepInEx/config
+    - run: cp build/${{ github.event.repository.name }}.dll ${{ github.event.repository.name }}/reg/BepInEx/plugins/${{ github.event.repository.name }}.dll
+    - run: unzip BepInEx-Unity.IL2CPP-win-x64* -d ${{ github.event.repository.name }}/reg
+    - run: chmod -R 775 ${{ github.event.repository.name }}/reg
+    - run: cp .github/workflows/BepInEx.cfg ${{ github.event.repository.name }}/reg/BepInEx/config
+    - run: cp .github/workflows/doorstop_config.ini ${{ github.event.repository.name }}/reg/
+    - run: touch ${{ github.event.repository.name }}/reg/EXTRACT_TO_GAME_DIRECTORY
+    - run: cd ${{ github.event.repository.name }}/reg; zip -r ../${{ github.event.repository.name }}_${{ github.event.inputs.version }}.zip ./*
+
+    # Ubi+ artifact
+    - run: mkdir -p ${{ github.event.repository.name }}/ubi/BepInEx/plugins; mkdir -p ${{ github.event.repository.name }}/ubi/BepInEx/config
+    - run: cp build/${{ github.event.repository.name }}.dll ${{ github.event.repository.name }}/ubi/BepInEx/plugins/${{ github.event.repository.name }}.dll
+    - run: unzip BepInEx-Unity.IL2CPP-win-x64* -d ${{ github.event.repository.name }}/ubi
+    - run: chmod -R 775 ${{ github.event.repository.name }}/ubi
+    - run: cp .github/workflows/BepInEx.cfg ${{ github.event.repository.name }}/ubi/BepInEx/config
+    - run: cp .github/workflows/doorstop_config.ini ${{ github.event.repository.name }}/ubi/
+    - run: touch ${{ github.event.repository.name }}/ubi/EXTRACT_TO_GAME_DIRECTORY
+    - run: cd ${{ github.event.repository.name }}/ubi; zip -r ../${{ github.event.repository.name }}_${{ github.event.inputs.version }}_UbisoftPlus.zip ./*
+
+    # Create release
     - uses: ncipollo/release-action@v1
       with:
-        artifacts: "${{ github.event.repository.name }}_${{ github.event.inputs.version }}.zip"
+        artifacts: "${{ github.event.repository.name }}_${{ github.event.inputs.version }}.zip, ${{ github.event.repository.name }}_${{ github.event.inputs.version }}_UbisoftPlus.zip"
         token: ${{ secrets.GITHUB_TOKEN }}
         tag: ${{ github.event.inputs.version }}
         name: "${{ github.event.inputs.version }}"
